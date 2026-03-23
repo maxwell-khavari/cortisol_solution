@@ -1,0 +1,754 @@
+
+create a website that is LOWER YOUR CORTISOL and FIX YOUR ATTENTION SPAN and its a website with a timer that u just stay staring at the white screen for until your attention span is beetter add cool features and make the website
+
+1:56 PM
+
+Viewed a file, created a file, read a file
+Viewed a file, created a file, read a file
+Here's your STILLNESS site. Here's what's packed in:
+
+Core experience
+
+Clean, warm off-white screen — intentionally boring, that's the point
+A breathing orb with ripple rings that pulses on a 4-2-6 cycle (inhale / hold / exhale) to actively lower your heart rate
+Countdown timer in big serif type that turns red when you're in the last 30 seconds
+Features
+
+Duration picker — 2, 5, 10, or 20 minute sessions
+Breath guide sidebar — dot indicators + text cycling through INHALE → HOLD → EXHALE
+Ambient quotes — calming phrases fade in and out every ~18 seconds
+Tab switch detection — if you try to escape to another tab, a warning banner fires
+Pause / Resume with a frosted overlay
+Stats tracking (localStorage) — day streak, total sessions, total minutes reclaimed
+Completion screen showing your cumulative minutes back
+Custom cursor — no default arrow, just a small dot that blooms on hover
+Cortisol
+Code · HTML 
+yes good now suggest 10 new features and implement
+
+1:59 PM
+Here are 10 features I'm thinking of — vote on your favorites and I'll build them all in!
+
+Pick whichever ones you want and I'll implement them all at once into the site!
+
+Q: Which features do you want added? (Select all that apply)
+A: 🎵 Ambient sound mixer (rain, white noise, binaural beats), 📊 Post-session cortisol score + attention report, 🌊 Animated background that slowly shifts — waves, fog, or aurora, ✍️ End-of-session journal prompt to reflect, 🌙 Day/night mode that auto-matches your local time, 🔥 Streaks calendar — GitHub-style heatmap of your sessions, 😤 Pre-session stress check-in (1–10 scale) tracked over time, 🔔 Gentle bell sound at session milestones (25%, 50%, 75%)
+
+2:01 PM
+Let me build all 8 into the site now!
+
+
+Reading the existing site
+Reading the existing site
+Now I'll rebuild the full site with all 8 features woven in cleanly:
+
+
+Created 2 files, ran a command, read a file
+Created 2 files, ran a command, read a file
+
+Full rebuild with all 8 new features
+cortisol.html
+
+Remove old file
+
+Script
+
+Full rebuild with all 8 new features
+cortisol.html
+
+Presented file
+Done
+All 8 features are in. Here's what was added:
+
+🎵 Ambient sound mixer — Silence / Rain (layered bandpass noise) / White Noise / Binaural beats (200 Hz + 210 Hz = 10 Hz alpha wave). Volume slider adjusts live.
+
+🌊 Animated aurora background — three slow sine waves drift across the screen during your session, then fade away when you finish.
+
+😤 Pre-session stress check-in — a bar-chart scale (1–10) appears before every session. Your selection is logged and tracked.
+
+📊 Post-session cortisol report — shows estimated cortisol reduction %, attention score with a filling bar, stress before → after delta, breath count, and total minutes reclaimed.
+
+🔔 Bell at milestones — a pure 528 Hz tone fades in at 25%, 50%, and 75% with a soft text flash.
+
+🌙 Auto day/night mode — automatically switches to dark at 8 PM and back to light at 7 AM. Manual toggle in the top-right overrides it.
+
+🔥 84-day session heatmap — GitHub-style grid on the done screen, colour-coded by sessions per day.
+
+✍️ Post-session journal — rotating prompts with a free-write textarea. Notes are saved to localStorage.
+
+Cortisol
+Code · HTML 
+
+
+Want to be notified when Claude responds?
+ww
+
+
+Claude is AI and can make mistakes. Please double-check responses.
+Cortisol · HTML
+Copy
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STILLNESS — Lower Your Cortisol</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f5f2ec; --text:#1a1a18; --muted:#9b9790; --accent:#c4a882;
+  --soft:#e8e3d8; --danger:#b85c3a; --calm:#6a8c7a;
+  --overlay:rgba(245,242,236,0.93); --card:rgba(255,255,255,0.45);
+}
+[data-theme="night"] {
+  --bg:#0f0f0d; --text:#e4dfd6; --muted:#4e4c48; --accent:#7a5e40;
+  --soft:#222220; --danger:#7a3020; --calm:#2e5040;
+  --overlay:rgba(15,15,13,0.93); --card:rgba(28,28,26,0.5);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;overflow:hidden;cursor:none;transition:background 1.5s,color 1.5s;}
+ 
+/* grain */
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:1000;opacity:0.5;}
+ 
+/* cursor */
+#cursor{width:8px;height:8px;background:var(--text);border-radius:50%;position:fixed;pointer-events:none;z-index:9999;transition:transform .15s,background .3s;transform:translate(-50%,-50%);}
+#cursor.big{transform:translate(-50%,-50%) scale(6);background:var(--accent);opacity:0.3;}
+ 
+/* corners */
+.corner{position:fixed;width:36px;height:36px;opacity:.1;transition:opacity .5s;}
+.corner-tl{top:22px;left:22px;border-top:1px solid var(--text);border-left:1px solid var(--text);}
+.corner-tr{top:22px;right:22px;border-top:1px solid var(--text);border-right:1px solid var(--text);}
+.corner-bl{bottom:22px;left:22px;border-bottom:1px solid var(--text);border-left:1px solid var(--text);}
+.corner-br{bottom:22px;right:22px;border-bottom:1px solid var(--text);border-right:1px solid var(--text);}
+ 
+/* theme toggle */
+#theme-toggle{position:fixed;top:22px;right:22px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);background:transparent;border:1px solid var(--soft);padding:6px 12px;cursor:none;z-index:600;transition:all .2s;}
+#theme-toggle:hover{color:var(--text);border-color:var(--text);}
+ 
+/* canvas bg */
+#bg-canvas{position:fixed;inset:0;z-index:0;opacity:0;transition:opacity 2.5s;}
+#bg-canvas.show{opacity:1;}
+ 
+/* ── SCREENS COMMON ── */
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .8s;z-index:50;}
+.screen.visible{opacity:1;pointer-events:all;}
+ 
+/* ═══════════════════════════
+   STRESS CHECK-IN
+═══════════════════════════ */
+#stress-screen{background:var(--bg);z-index:510;}
+.stress-eyebrow{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--muted);margin-bottom:20px;}
+.stress-q{font-family:'DM Serif Display',serif;font-size:clamp(26px,5vw,50px);color:var(--text);text-align:center;line-height:1.2;letter-spacing:-.02em;}
+.stress-q em{font-style:italic;color:var(--accent);}
+.stress-scale{margin-top:36px;display:flex;gap:7px;align-items:flex-end;}
+.stress-btn{width:34px;border:none;background:var(--soft);color:var(--muted);font-family:'DM Mono',monospace;font-size:10px;cursor:none;transition:all .15s;display:flex;align-items:center;justify-content:center;border-radius:2px;}
+.stress-btn:nth-child(1){height:22px;}.stress-btn:nth-child(2){height:27px;}.stress-btn:nth-child(3){height:32px;}.stress-btn:nth-child(4){height:37px;}.stress-btn:nth-child(5){height:42px;}
+.stress-btn:nth-child(6){height:48px;}.stress-btn:nth-child(7){height:54px;}.stress-btn:nth-child(8){height:61px;}.stress-btn:nth-child(9){height:68px;}.stress-btn:nth-child(10){height:76px;}
+.stress-btn:hover,.stress-btn.sel{background:var(--text);color:var(--bg);}
+.stress-hint{margin-top:10px;font-size:9px;letter-spacing:.12em;color:var(--muted);text-align:center;}
+ 
+/* ═══════════════════════════
+   INTRO
+═══════════════════════════ */
+#intro{background:var(--bg);z-index:500;}
+#intro.hidden{opacity:0;pointer-events:none;transition:opacity 1.2s;}
+.intro-label{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);margin-bottom:22px;animation:fadeUp .8s both;}
+.intro-title{font-family:'DM Serif Display',serif;font-size:clamp(46px,8vw,92px);line-height:1;text-align:center;color:var(--text);animation:fadeUp .8s .15s both;letter-spacing:-.02em;}
+.intro-title em{font-style:italic;color:var(--accent);}
+.intro-sub{margin-top:18px;font-size:11px;letter-spacing:.14em;color:var(--muted);text-align:center;line-height:1.9;animation:fadeUp .8s .3s both;}
+ 
+.dur-row{margin-top:44px;display:flex;gap:10px;animation:fadeUp .8s .44s both;}
+.dur-btn{border:1px solid var(--soft);background:transparent;color:var(--text);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;padding:9px 18px;cursor:none;transition:all .2s;}
+.dur-btn:hover,.dur-btn.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+ 
+.sound-row{margin-top:22px;display:flex;gap:8px;align-items:center;animation:fadeUp .8s .54s both;}
+.sound-label{font-size:9px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;}
+.snd-btn{border:1px solid var(--soft);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;padding:5px 11px;cursor:none;transition:all .2s;}
+.snd-btn:hover{color:var(--text);border-color:var(--text);}
+.snd-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent);}
+ 
+.vol-row{margin-top:8px;display:flex;align-items:center;gap:10px;animation:fadeUp .8s .58s both;}
+.vol-row label{font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
+#vol-slider{-webkit-appearance:none;appearance:none;width:90px;height:2px;background:var(--soft);outline:none;cursor:none;}
+#vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;background:var(--accent);border-radius:50%;}
+ 
+.start-btn{margin-top:22px;border:none;background:var(--text);color:var(--bg);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.25em;text-transform:uppercase;padding:13px 38px;cursor:none;animation:fadeUp .8s .68s both;transition:background .2s;}
+.start-btn:hover{background:var(--accent);color:var(--text);}
+ 
+/* ═══════════════════════════
+   SESSION
+═══════════════════════════ */
+#session{z-index:10;background:transparent;}
+ 
+#orb-wrap{position:relative;width:190px;height:190px;display:flex;align-items:center;justify-content:center;}
+.orb-ring{position:absolute;border-radius:50%;border:1px solid var(--accent);opacity:0;animation:ripple 6s ease-out infinite;}
+.orb-ring:nth-child(1){width:100%;height:100%;animation-delay:0s;}
+.orb-ring:nth-child(2){width:100%;height:100%;animation-delay:2s;}
+.orb-ring:nth-child(3){width:100%;height:100%;animation-delay:4s;}
+@keyframes ripple{0%{transform:scale(1);opacity:.5;}100%{transform:scale(2.2);opacity:0;}}
+ 
+#orb{width:76px;height:76px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--soft),var(--accent));box-shadow:0 4px 30px rgba(196,168,130,.3);animation:breathe 12s ease-in-out infinite;position:relative;z-index:2;}
+@keyframes breathe{0%,100%{transform:scale(1);}33%{transform:scale(1.38);}50%{transform:scale(1.38);}83%{transform:scale(1);}}
+ 
+#timer-display{margin-top:44px;font-family:'DM Serif Display',serif;font-size:clamp(54px,10vw,116px);letter-spacing:-.03em;color:var(--text);line-height:1;}
+#timer-display.warn{color:var(--danger);}
+.timer-label{margin-top:6px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);text-align:center;}
+ 
+#progress-wrap{margin-top:36px;width:270px;height:2px;background:var(--soft);position:relative;}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--calm));width:0%;transition:width 1s linear;}
+.ms-mark{position:absolute;top:-4px;width:1px;height:10px;background:var(--muted);opacity:.35;}
+ 
+#breath-guide{margin-top:28px;font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);height:18px;}
+ 
+#stats-row{margin-top:44px;display:flex;gap:44px;opacity:0;transition:opacity .8s 1s;}
+#session.visible #stats-row{opacity:1;}
+.stat{text-align:center;}
+.stat-num{font-family:'DM Serif Display',serif;font-size:27px;color:var(--text);display:block;}
+.stat-label{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted);display:block;margin-top:2px;}
+ 
+#controls{margin-top:28px;display:flex;gap:14px;opacity:0;transition:opacity .5s;}
+#session.visible #controls{opacity:1;}
+.ctrl-btn{border:1px solid var(--soft);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:7px 14px;cursor:none;transition:all .2s;}
+.ctrl-btn:hover{border-color:var(--text);color:var(--text);}
+ 
+#ambient-quote{position:fixed;bottom:36px;left:50%;transform:translateX(-50%);font-family:'DM Serif Display',serif;font-style:italic;font-size:13px;color:var(--muted);opacity:0;transition:opacity 2s;white-space:nowrap;pointer-events:none;z-index:20;}
+ 
+#breath-phase{position:fixed;right:28px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;opacity:0;transition:opacity 1s 1.5s;z-index:20;}
+#session.visible #breath-phase{opacity:.5;}
+.phase-dot{width:4px;height:4px;border-radius:50%;background:var(--muted);transition:transform .3s,background .3s;}
+.phase-dot.active{background:var(--accent);transform:scale(2);}
+.phase-text{font-size:8px;letter-spacing:.15em;color:var(--muted);writing-mode:vertical-rl;margin-top:8px;}
+ 
+#milestone-flash{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'DM Serif Display',serif;font-size:19px;color:var(--accent);letter-spacing:.08em;opacity:0;pointer-events:none;z-index:700;transition:opacity .4s;}
+#milestone-flash.show{opacity:1;}
+ 
+#distraction-warn{position:fixed;top:28px;left:50%;transform:translateX(-50%);background:var(--danger);color:#fff;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:7px 18px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:600;}
+#distraction-warn.show{opacity:1;}
+ 
+#pause-overlay{position:fixed;inset:0;background:var(--overlay);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:44px;color:var(--muted);opacity:0;pointer-events:none;transition:opacity .3s;z-index:400;letter-spacing:-.02em;}
+#pause-overlay.show{opacity:1;pointer-events:all;}
+ 
+/* ═══════════════════════════
+   DONE
+═══════════════════════════ */
+#done-screen{background:var(--bg);z-index:450;justify-content:flex-start;overflow-y:auto;padding:40px 20px;}
+.done-inner{width:min(440px,92vw);margin:0 auto;display:flex;flex-direction:column;gap:0;}
+.done-eyebrow{font-size:10px;letter-spacing:.4em;text-transform:uppercase;color:var(--calm);}
+.done-title{font-family:'DM Serif Display',serif;font-size:clamp(36px,6vw,72px);margin-top:10px;color:var(--text);letter-spacing:-.02em;}
+ 
+/* report card */
+#cortisol-report{margin-top:20px;background:var(--card);border:1px solid var(--soft);padding:16px 24px;backdrop-filter:blur(8px);}
+.report-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--soft);}
+.report-row:last-child{border-bottom:none;}
+.rk{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+.rv{font-family:'DM Serif Display',serif;font-size:17px;color:var(--text);}
+.rbar-wrap{width:72px;height:3px;background:var(--soft);}
+.rbar{height:100%;background:var(--calm);width:0%;transition:width 1.4s ease .4s;}
+ 
+/* heatmap */
+#heatmap-wrap{margin-top:16px;}
+.section-title{font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+#heatmap-grid{display:flex;gap:3px;flex-wrap:wrap;}
+.hm-cell{width:11px;height:11px;border-radius:2px;background:var(--soft);}
+.hm-cell[data-level="1"]{background:color-mix(in srgb,var(--calm) 28%,var(--soft));}
+.hm-cell[data-level="2"]{background:color-mix(in srgb,var(--calm) 58%,var(--soft));}
+.hm-cell[data-level="3"]{background:var(--calm);}
+ 
+/* stress chart */
+#stress-history-wrap{margin-top:16px;}
+#stress-chart{display:flex;align-items:flex-end;gap:4px;height:44px;}
+.sc-bar{flex:1;border-radius:2px 2px 0 0;min-width:7px;transition:height .8s ease;}
+ 
+/* journal */
+#journal-wrap{margin-top:16px;}
+.journal-prompt{font-family:'DM Serif Display',serif;font-style:italic;font-size:15px;color:var(--text);margin-bottom:9px;line-height:1.45;}
+#journal-input{width:100%;background:var(--card);border:1px solid var(--soft);color:var(--text);font-family:'DM Mono',monospace;font-size:11px;line-height:1.7;padding:11px;resize:none;min-height:68px;outline:none;cursor:none;transition:border-color .2s;}
+#journal-input:focus{border-color:var(--accent);}
+#journal-input::placeholder{color:var(--muted);}
+ 
+.done-actions{margin-top:18px;margin-bottom:40px;display:flex;gap:10px;}
+.again-btn{border:1px solid var(--text);background:transparent;color:var(--text);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.22em;text-transform:uppercase;padding:11px 26px;cursor:none;transition:all .2s;}
+.again-btn:hover{background:var(--text);color:var(--bg);}
+ 
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+ 
+<canvas id="bg-canvas"></canvas>
+<div id="cursor"></div>
+<div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div><div class="corner corner-br"></div>
+<button id="theme-toggle">☽ NIGHT</button>
+ 
+<!-- STRESS CHECK-IN -->
+<div id="stress-screen" class="screen">
+  <div class="stress-eyebrow">Before we begin</div>
+  <div class="stress-q">How stressed are you<br>right <em>now?</em></div>
+  <div class="stress-scale">
+    <button class="stress-btn" data-v="1">1</button><button class="stress-btn" data-v="2">2</button>
+    <button class="stress-btn" data-v="3">3</button><button class="stress-btn" data-v="4">4</button>
+    <button class="stress-btn" data-v="5">5</button><button class="stress-btn" data-v="6">6</button>
+    <button class="stress-btn" data-v="7">7</button><button class="stress-btn" data-v="8">8</button>
+    <button class="stress-btn" data-v="9">9</button><button class="stress-btn" data-v="10">10</button>
+  </div>
+  <div class="stress-hint">1 = completely calm &nbsp;·&nbsp; 10 = extremely stressed</div>
+</div>
+ 
+<!-- INTRO -->
+<div id="intro">
+  <div class="intro-label">A practice in presence</div>
+  <div class="intro-title">Lower your<br><em>cortisol.</em></div>
+  <div class="intro-sub">No scrolling. No notifications. No dopamine spikes.<br>Just you, your breath, and a white screen.</div>
+  <div class="dur-row">
+    <button class="dur-btn active" data-seconds="120">2 min</button>
+    <button class="dur-btn" data-seconds="300">5 min</button>
+    <button class="dur-btn" data-seconds="600">10 min</button>
+    <button class="dur-btn" data-seconds="1200">20 min</button>
+  </div>
+  <div class="sound-row">
+    <span class="sound-label">Ambient</span>
+    <button class="snd-btn active" data-sound="none">SILENCE</button>
+    <button class="snd-btn" data-sound="rain">RAIN</button>
+    <button class="snd-btn" data-sound="white">WHITE NOISE</button>
+    <button class="snd-btn" data-sound="binaural">BINAURAL</button>
+  </div>
+  <div class="vol-row">
+    <label for="vol-slider">VOL</label>
+    <input type="range" id="vol-slider" min="0" max="1" step="0.01" value="0.38">
+  </div>
+  <button class="start-btn" id="start-btn">BEGIN SESSION</button>
+</div>
+ 
+<!-- SESSION -->
+<div id="session" class="screen">
+  <div id="orb-wrap">
+    <div class="orb-ring"></div><div class="orb-ring"></div><div class="orb-ring"></div>
+    <div id="orb"></div>
+  </div>
+  <div id="timer-display">00:00</div>
+  <div class="timer-label">remaining</div>
+  <div id="progress-wrap">
+    <div id="progress-bar"></div>
+    <div class="ms-mark" style="left:25%"></div>
+    <div class="ms-mark" style="left:50%"></div>
+    <div class="ms-mark" style="left:75%"></div>
+  </div>
+  <div id="breath-guide">INHALE</div>
+  <div id="stats-row">
+    <div class="stat"><span class="stat-num" id="streak-num">0</span><span class="stat-label">day streak</span></div>
+    <div class="stat"><span class="stat-num" id="sessions-num">0</span><span class="stat-label">sessions</span></div>
+    <div class="stat"><span class="stat-num" id="total-min">0</span><span class="stat-label">min total</span></div>
+  </div>
+  <div id="controls">
+    <button class="ctrl-btn" id="pause-btn">PAUSE</button>
+    <button class="ctrl-btn" id="quit-btn">END SESSION</button>
+  </div>
+</div>
+ 
+<div id="breath-phase">
+  <div class="phase-dot active" id="dot-inhale"></div>
+  <div class="phase-dot" id="dot-hold"></div>
+  <div class="phase-dot" id="dot-exhale"></div>
+  <div class="phase-text">BREATH</div>
+</div>
+ 
+<div id="milestone-flash"></div>
+<div id="distraction-warn">STAY PRESENT — DON'T SWITCH TABS</div>
+<div id="pause-overlay">Paused — <em>return when ready</em></div>
+<div id="ambient-quote"></div>
+ 
+<!-- DONE -->
+<div id="done-screen" class="screen">
+  <div class="done-inner">
+    <div class="done-eyebrow">Session Complete</div>
+    <div class="done-title" id="done-title">Well done.</div>
+ 
+    <div id="cortisol-report">
+      <div class="report-row"><span class="rk">Cortisol reduction est.</span><span class="rv" id="rep-cortisol">—</span></div>
+      <div class="report-row">
+        <span class="rk">Attention score</span>
+        <div style="display:flex;align-items:center;gap:8px"><div class="rbar-wrap"><div class="rbar" id="rep-attn-bar"></div></div><span class="rv" id="rep-attn">—</span></div>
+      </div>
+      <div class="report-row"><span class="rk">Stress delta</span><span class="rv" id="rep-stress-delta">—</span></div>
+      <div class="report-row"><span class="rk">Breaths completed</span><span class="rv" id="rep-breaths">—</span></div>
+      <div class="report-row"><span class="rk">Total time reclaimed</span><span class="rv" id="rep-total">—</span></div>
+    </div>
+ 
+    <div id="heatmap-wrap">
+      <div class="section-title">84-day session heatmap</div>
+      <div id="heatmap-grid"></div>
+    </div>
+ 
+    <div id="stress-history-wrap">
+      <div class="section-title">Stress levels — recent sessions</div>
+      <div id="stress-chart"></div>
+    </div>
+ 
+    <div id="journal-wrap">
+      <div class="journal-prompt" id="journal-prompt">"What do you notice in your body right now?"</div>
+      <textarea id="journal-input" placeholder="Write freely — this is just for you..."></textarea>
+    </div>
+ 
+    <div class="done-actions">
+      <button class="again-btn" id="again-btn">GO AGAIN</button>
+      <button class="again-btn" id="save-journal-btn">SAVE NOTE</button>
+    </div>
+  </div>
+</div>
+ 
+<script>
+/* ── Storage ── */
+const SK = 'stillness_v2';
+function load() { try { return JSON.parse(localStorage.getItem(SK)) || def(); } catch { return def(); } }
+function def() { return {sessions:0,totalMin:0,streak:0,lastDate:null,sessionDates:{},stressLog:[],journals:[]}; }
+function save(d) { try { localStorage.setItem(SK, JSON.stringify(d)); } catch {} }
+ 
+/* ── Theme ── */
+let manualTheme = null;
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('theme-toggle').textContent = t==='night' ? '☀ DAY' : '☽ NIGHT';
+}
+function autoTheme() { if (!manualTheme) { const h = new Date().getHours(); applyTheme((h>=20||h<7)?'night':'day'); } }
+autoTheme(); setInterval(autoTheme, 60000);
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  manualTheme = cur==='night' ? 'day' : 'night';
+  applyTheme(manualTheme);
+});
+ 
+/* ── Cursor ── */
+const cursor = document.getElementById('cursor');
+document.addEventListener('mousemove', e => { cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px'; });
+function hookCursor() {
+  document.querySelectorAll('button,input,textarea').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+  });
+}
+ 
+/* ── Background canvas (aurora waves) ── */
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let bgT = 0, bgRunning = false;
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas); resizeCanvas();
+ 
+function drawBg() {
+  if (!bgRunning) return;
+  requestAnimationFrame(drawBg);
+  bgT += 0.0025;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const night = document.documentElement.getAttribute('data-theme')==='night';
+  const waves = [
+    {amp:55, freq:.8, sp:1.0, y:.42, col: night?'rgba(80,55,35,.08)':'rgba(196,168,130,.09)'},
+    {amp:70, freq:.5, sp:.65, y:.57, col: night?'rgba(32,65,48,.07)':'rgba(106,140,122,.08)'},
+    {amp:45, freq:1.1,sp:1.25,y:.67, col: night?'rgba(55,35,75,.06)':'rgba(170,140,105,.06)'},
+  ];
+  waves.forEach(w => {
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height);
+    for (let x=0; x<=canvas.width; x+=5) {
+      const y = canvas.height*w.y + Math.sin(x*w.freq*.01+bgT*w.sp)*w.amp
+                                   + Math.sin(x*w.freq*.007+bgT*w.sp*1.3)*w.amp*.4;
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.fillStyle = w.col; ctx.fill();
+  });
+}
+function startBg() { bgRunning=true; drawBg(); canvas.classList.add('show'); }
+function stopBg()  { bgRunning=false; canvas.classList.remove('show'); }
+ 
+/* ── Audio ── */
+let audioCtx=null, audioNodes=[], selectedSound='none';
+function ac() { if (!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
+function stopAudio() { audioNodes.forEach(n=>{try{n.stop();}catch{}}); audioNodes=[]; }
+ 
+function startSound(type) {
+  stopAudio();
+  if (type==='none') return;
+  const a=ac(), vol=parseFloat(document.getElementById('vol-slider').value);
+  const gain=a.createGain(); gain.gain.value=vol; gain.connect(a.destination);
+ 
+  if (type==='white') {
+    const sz=a.sampleRate*4, buf=a.createBuffer(1,sz,a.sampleRate), d=buf.getChannelData(0);
+    for (let i=0;i<sz;i++) d[i]=(Math.random()*2-1)*.28;
+    const src=a.createBufferSource(); src.buffer=buf; src.loop=true;
+    src.connect(gain); src.start(); audioNodes.push(src);
+  }
+  if (type==='rain') {
+    [[180,.35],[750,.28],[3500,.18]].forEach(([f,g],i)=>{
+      const sz=a.sampleRate*3, buf=a.createBuffer(1,sz,a.sampleRate), d=buf.getChannelData(0);
+      for (let j=0;j<sz;j++) d[j]=Math.random()*2-1;
+      const src=a.createBufferSource(); src.buffer=buf; src.loop=true;
+      const flt=a.createBiquadFilter(); flt.type='bandpass'; flt.frequency.value=f; flt.Q.value=.6;
+      const g2=a.createGain(); g2.gain.value=g;
+      src.connect(flt); flt.connect(g2); g2.connect(gain);
+      src.start(0,Math.random()*3); audioNodes.push(src);
+    });
+  }
+  if (type==='binaural') {
+    const merger=a.createChannelMerger(2); merger.connect(gain);
+    [200,210].forEach((freq,ch)=>{
+      const osc=a.createOscillator(); osc.type='sine'; osc.frequency.value=freq;
+      const g2=a.createGain(); g2.gain.value=.10;
+      osc.connect(g2); g2.connect(merger,0,ch); osc.start(); audioNodes.push(osc);
+    });
+  }
+}
+ 
+function playBell() {
+  const a=ac(), osc=a.createOscillator(), gain=a.createGain();
+  osc.type='sine'; osc.frequency.setValueAtTime(528,a.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(220,a.currentTime+2);
+  gain.gain.setValueAtTime(.3,a.currentTime);
+  gain.gain.exponentialRampToValueAtTime(.001,a.currentTime+2.5);
+  osc.connect(gain); gain.connect(a.destination); osc.start(); osc.stop(a.currentTime+2.5);
+}
+ 
+document.getElementById('vol-slider').addEventListener('input', ()=>{ if (audioNodes.length) startSound(selectedSound); });
+document.querySelectorAll('.snd-btn').forEach(btn => btn.addEventListener('click', ()=>{
+  document.querySelectorAll('.snd-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); selectedSound=btn.dataset.sound;
+}));
+ 
+/* ── State ── */
+let duration=120, remaining=120, interval=null, paused=false;
+let breathTimer=null, quoteTimer=null, distractTimer=null;
+let phaseIdx=0, breathCount=0, preStress=null, milestonesHit=new Set();
+ 
+/* ── Stress check-in ── */
+document.querySelectorAll('.stress-btn').forEach(btn => btn.addEventListener('click', ()=>{
+  document.querySelectorAll('.stress-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel'); preStress=parseInt(btn.dataset.v);
+  setTimeout(()=>{ document.getElementById('stress-screen').classList.remove('visible'); showIntro(); }, 600);
+}));
+ 
+/* ── Intro ── */
+function showIntro() {
+  const el=document.getElementById('intro');
+  el.style.transition='none'; el.classList.remove('hidden'); el.style.opacity=1;
+  requestAnimationFrame(()=>{ el.style.transition='opacity 1.2s ease'; });
+  updateStatsUI();
+}
+function updateStatsUI() {
+  const s=load();
+  document.getElementById('streak-num').textContent=s.streak;
+  document.getElementById('sessions-num').textContent=s.sessions;
+  document.getElementById('total-min').textContent=Math.round(s.totalMin);
+}
+ 
+document.querySelectorAll('.dur-btn').forEach(btn => btn.addEventListener('click', ()=>{
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); duration=parseInt(btn.dataset.seconds);
+}));
+ 
+document.getElementById('start-btn').addEventListener('click', ()=>{
+  document.getElementById('intro').classList.add('hidden');
+  setTimeout(startSession, 1200);
+});
+ 
+/* ── Session ── */
+const phases=[{name:'INHALE',dur:4000,dot:'dot-inhale'},{name:'HOLD',dur:2000,dot:'dot-hold'},{name:'EXHALE',dur:6000,dot:'dot-exhale'}];
+const breathGuide=document.getElementById('breath-guide');
+ 
+function startSession() {
+  remaining=duration; paused=false; phaseIdx=0; breathCount=0; milestonesHit.clear();
+  document.getElementById('session').classList.add('visible');
+  updateStatsUI(); updateTimer();
+  interval=setInterval(tick,1000);
+  runBreath(); startBg(); startSound(selectedSound);
+  setTimeout(cycleQuote, 10000);
+}
+ 
+function runBreath() {
+  const p=phases[phaseIdx];
+  breathGuide.textContent=p.name;
+  document.querySelectorAll('.phase-dot').forEach(d=>d.classList.remove('active'));
+  document.getElementById(p.dot).classList.add('active');
+  if (p.name==='INHALE') breathCount++;
+  breathTimer=setTimeout(()=>{ phaseIdx=(phaseIdx+1)%phases.length; if(!paused) runBreath(); }, p.dur);
+}
+ 
+function fmt(s) { return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+ 
+function tick() {
+  if (paused) return;
+  remaining--; updateTimer(); checkMilestones();
+  if (remaining<=0) finish();
+}
+ 
+function updateTimer() {
+  const el=document.getElementById('timer-display');
+  el.textContent=fmt(remaining); el.classList.toggle('warn',remaining<=30&&remaining>0);
+  document.getElementById('progress-bar').style.width=((duration-remaining)/duration*100)+'%';
+}
+ 
+const msMsgs={25:'¼ there — keep breathing',50:'halfway — you\'re doing it',75:'almost done — stay here'};
+function checkMilestones() {
+  const pct=Math.round((duration-remaining)/duration*100);
+  [25,50,75].forEach(m=>{ if(pct>=m&&!milestonesHit.has(m)){ milestonesHit.add(m); playBell(); flashMs(msMsgs[m]); }});
+}
+function flashMs(msg) {
+  const el=document.getElementById('milestone-flash');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+ 
+const quotes=[
+  "The present moment is the only moment available.",
+  "Boredom is a doorway to depth.",
+  "Your attention is the most valuable thing you own.",
+  "Stillness is not emptiness — it is fullness.",
+  "Rest is not weakness. It is intelligence.",
+  "You are already enough, right here.",
+  "The mind that wanders can learn to return.",
+  "Silence is the language the body speaks.",
+  "Let the noise outside become quieter than your breath.",
+  "This is the most productive thing you can do right now.",
+];
+let qi=0;
+function cycleQuote() {
+  const el=document.getElementById('ambient-quote');
+  el.style.opacity=0;
+  setTimeout(()=>{ el.textContent=quotes[qi%quotes.length]; el.style.opacity=1; qi++; }, 2000);
+  quoteTimer=setTimeout(cycleQuote,20000);
+}
+ 
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden&&interval){
+    const w=document.getElementById('distraction-warn'); w.classList.add('show');
+    clearTimeout(distractTimer); distractTimer=setTimeout(()=>w.classList.remove('show'),4000);
+  }
+});
+ 
+document.getElementById('pause-btn').addEventListener('click',()=>{
+  paused=!paused;
+  document.getElementById('pause-btn').textContent=paused?'RESUME':'PAUSE';
+  document.getElementById('pause-overlay').classList.toggle('show',paused);
+  if (!paused) runBreath();
+});
+ 
+document.getElementById('quit-btn').addEventListener('click',()=>{
+  if(confirm('End this session early?')) finish(true);
+});
+ 
+/* ── Finish ── */
+const journalPrompts=[
+  '"What do you notice in your body right now?"',
+  '"What did your mind keep reaching for during this session?"',
+  '"What\'s one thing you\'re grateful for in this moment?"',
+  '"How does stillness feel different from being idle?"',
+  '"What will you carry from this silence into your day?"',
+];
+const doneTitles=['Well done.','Beautiful.','You stayed.','Stillness found you.','There you are.'];
+ 
+function finish(early=false) {
+  clearInterval(interval); clearTimeout(breathTimer); clearTimeout(quoteTimer); interval=null;
+  const minDone=Math.max(0.5, (duration-(early?remaining:0))/60);
+ 
+  const d=load();
+  d.sessions+=1; d.totalMin=Math.round((d.totalMin+minDone)*10)/10;
+  const today=new Date().toDateString();
+  const yesterday=new Date(Date.now()-86400000).toDateString();
+  if(d.lastDate!==today) d.streak=(d.lastDate===yesterday)?d.streak+1:1;
+  d.lastDate=today;
+  const dkey=new Date().toISOString().split('T')[0];
+  d.sessionDates[dkey]=(d.sessionDates[dkey]||0)+1;
+  if(preStress!==null) d.stressLog.push({date:dkey,v:preStress,min:minDone});
+  save(d);
+ 
+  stopAudio(); stopBg();
+  buildReport(d, minDone);
+  buildHeatmap(d.sessionDates);
+  buildStressChart(d.stressLog);
+  document.getElementById('journal-prompt').textContent=journalPrompts[d.sessions%journalPrompts.length];
+  document.getElementById('journal-input').value='';
+  document.getElementById('done-title').textContent=doneTitles[d.sessions%doneTitles.length];
+ 
+  document.getElementById('session').classList.remove('visible');
+  document.getElementById('breath-phase').style.opacity=0;
+  document.getElementById('ambient-quote').style.opacity=0;
+ 
+  setTimeout(()=>{
+    document.getElementById('done-screen').classList.add('visible');
+    setTimeout(()=>{ document.getElementById('rep-attn-bar').style.width=Math.min(100,Math.round(minDone/(duration/60)*75+25))+'%'; },300);
+  },1500);
+}
+ 
+function buildReport(d,minDone) {
+  const cortisolPct=Math.min(28,Math.round(minDone*1.6+2));
+  document.getElementById('rep-cortisol').textContent=`↓ ~${cortisolPct}%`;
+  const attn=Math.min(100,Math.round(minDone/(duration/60)*75+25));
+  document.getElementById('rep-attn').textContent=`${attn}/100`;
+  if(preStress!==null){
+    const postEst=Math.max(1,preStress-Math.round(minDone*0.9+0.5));
+    const delta=preStress-postEst;
+    document.getElementById('rep-stress-delta').textContent=delta>0?`${preStress} → ~${postEst} (↓${delta})`:`${preStress} (stable)`;
+  } else { document.getElementById('rep-stress-delta').textContent='—'; }
+  document.getElementById('rep-breaths').textContent=breathCount;
+  document.getElementById('rep-total').textContent=`${d.totalMin} min`;
+}
+ 
+function buildHeatmap(sessionDates) {
+  const grid=document.getElementById('heatmap-grid'); grid.innerHTML='';
+  const today=new Date();
+  for(let i=83;i>=0;i--){
+    const d2=new Date(today); d2.setDate(today.getDate()-i);
+    const key=d2.toISOString().split('T')[0];
+    const count=sessionDates[key]||0;
+    const cell=document.createElement('div'); cell.className='hm-cell';
+    cell.title=`${key}: ${count} session${count!==1?'s':''}`;
+    cell.dataset.level=Math.min(3,count); grid.appendChild(cell);
+  }
+}
+ 
+function buildStressChart(stressLog) {
+  const chart=document.getElementById('stress-chart'); chart.innerHTML='';
+  const recent=stressLog.slice(-24);
+  if(!recent.length){document.getElementById('stress-history-wrap').style.display='none';return;}
+  document.getElementById('stress-history-wrap').style.display='';
+  recent.forEach(e=>{
+    const bar=document.createElement('div'); bar.className='sc-bar';
+    const pct=e.v/10; bar.style.height=(pct*44)+'px';
+    bar.style.background=`color-mix(in srgb,var(--danger) ${Math.round(pct*100)}%,var(--calm))`;
+    bar.style.opacity=.5+pct*.5; bar.title=`${e.date}: stress ${e.v}`;
+    chart.appendChild(bar);
+  });
+}
+ 
+document.getElementById('save-journal-btn').addEventListener('click',()=>{
+  const text=document.getElementById('journal-input').value.trim();
+  if(!text) return;
+  const d=load(); d.journals=d.journals||[];
+  d.journals.push({date:new Date().toISOString(),text}); save(d);
+  const btn=document.getElementById('save-journal-btn');
+  btn.textContent='SAVED ✓'; setTimeout(()=>btn.textContent='SAVE NOTE',2000);
+});
+ 
+document.getElementById('again-btn').addEventListener('click',()=>{
+  document.getElementById('done-screen').classList.remove('visible');
+  preStress=null;
+  setTimeout(()=>{
+    document.querySelectorAll('.stress-btn').forEach(b=>b.classList.remove('sel'));
+    document.getElementById('stress-screen').classList.add('visible');
+  },800);
+});
+ 
+/* ── Boot ── */
+window.addEventListener('load',()=>{
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('intro').style.opacity=0;
+  document.getElementById('stress-screen').classList.add('visible');
+  document.getElementById('stress-history-wrap').style.display='none';
+  hookCursor();
+});
+</script>
+</body>
+</html>
+ 
+
